@@ -2,6 +2,7 @@
 var sqlite3         =       require('sqlite3').verbose();
 var db              =       new sqlite3.Database('./test_2.db');
 
+
 //Perform SELECT Operation
 db.each("SELECT rowid as id, info FROM user_info", function(err, row) {
       console.log(row.info + "_" + row.id);
