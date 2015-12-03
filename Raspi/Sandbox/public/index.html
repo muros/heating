@@ -2,6 +2,8 @@
   <head>
     <meta charset="utf-8">
     <title>Thermostat</title>
+    <!-- Load AngularJS -->
+    <script src="angular.js"></script>
     <!--Load the AJAX API-->
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript">
@@ -34,6 +36,7 @@
           [[19,0,0], 11.1, 22.0],
           [[19,20,0], 23, 22.1]
         ]);
+        data.addColumn(tempData);
 
         // Set chart options
         var options = {'title':'Living room',
@@ -56,12 +59,8 @@
     </script>
   </head>
 
-  <body>
-    <div ng-controller="thermoCtrl"></div>
-    <script src="angular.js"></script>
-    <script src="thermoApp.js"></script>
-    <script src="thermoCtrl.js"></script>
-
+  <body ng-controller="thermoCtrl" >
+  <h1> {{tempData}}</h1>
     <!--
     <script src="lib/angular/angular.js"></script>
     <script src="lib/angular/angular-route.js"></script>
@@ -72,6 +71,9 @@
     <script src="js/directives.js"></script>
     -->
     <!--Div that will hold the pie chart-->
-    <div id="chart_div"></div>
+    <div id="chart_div" ng-controller="chartCtrl" />
+
+    <script src="../js/thermoApp.js"></script>
+    <script src="../js/thermoCtrl.js"></script>
   </body>
 </html>
