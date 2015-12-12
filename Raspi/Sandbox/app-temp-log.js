@@ -2,6 +2,18 @@ var sqlite = require('sqlite3').verbose();
 var db = new sqlite.Database('temperature.db');
 var util = require('util');
 var express = require('express');
+var serialPort = require("serialport");
+var SerialPort = serialPort.SerialPort;
+
+var arduinoPortName;
+var arduinoPort;
+serialPort.list(function (err, ports) {
+  ports.forEach(function(port) {
+    if (port.manufacturer != undefined) {
+      arduinoPortName = port.comName;
+    }
+  });
+});
 
 db.serialize(function() {
   db.run("CREATE TABLE if not exists temperature(time TEXT, temp REAL, hmdt REAL)");
@@ -20,6 +32,25 @@ process.stdin.on('data', function (text) {
     });
   } else if (text === 'clr\n') {
     db.run("DELETE FROM temperature");
+  } else if (text === 'port\n') {
+    console.log(arduinoPortName);
+    arduinoPort = new SerialPort(arduinoPortName,
+        {
+          baudrate: 9600,
+          parser: serialPort.parsers.readline("\n")
+        });
+    arduinoPort.on("data", function (data) {
+      var termostat = JSON.parse(data);
+      var date = new Date();
+      var time = date.toISOString();
+      var temp = termostat.temp;
+      var hmdt = termostat.hmdt;
+
+      db.run("INSERT into temperature(time, temp, hmdt) VALUES ('" + time + "', "
+          + temp + ", " +  hmdt + ")");
+    });
+
+
   } else {
     info = text.replace(/(\r\n|\n|\r)/gm,"");
   
