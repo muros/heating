@@ -16,7 +16,7 @@
 #include "Metro.h"
 
 HTU21D myHumidity;
-Metro serialMetro = Metro(1000);  // Instantiate an instance
+Metro serialMetro = Metro(60000);  // Instantiate an instance
 
 // Define which pin to be used to communicate with Base pin of TIP120 transistor
 const int TIP120pin = 11; // for this project, I pick Arduino's PMW pin 11
@@ -138,13 +138,15 @@ void loop() {
     //Serial.print("Time:");
     //Serial.print(millis());
     //Serial.print(" Temperature:");
+    Serial.print("{\"temp\":");
     Serial.print(temp, 1);
-    Serial.print(" C");
+    Serial.print(",\"hmdt\":");
     //Serial.print(" Humidity:");
-    //Serial.print(humd, 1);
-    //Serial.print("%");
-    Serial.print(" Flame:");
+    Serial.print(humd, 1);
+    Serial.print(",\"flame\":");
+    //Serial.print(" Flame:");
     Serial.print(255 - flameLevel);
+    Serial.print("}");
     Serial.println();
   }  
 
