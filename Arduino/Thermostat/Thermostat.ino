@@ -48,6 +48,8 @@ int ledOnState = 0;
 
 int flameLevel = 0;
 
+int incomingByte = 0; 
+
 void setup() {
   // Setup TIP120
   pinMode(TIP120pin, OUTPUT); // Set pin for output to control TIP120 Base pin
@@ -135,20 +137,50 @@ void loop() {
   
   // Send data to serial port
   if (serialMetro.check() == 1) {    
-    //Serial.print("Time:");
-    //Serial.print(millis());
-    //Serial.print(" Temperature:");
     Serial.print("{\"temp\":");
     Serial.print(temp, 1);
     Serial.print(",\"hmdt\":");
-    //Serial.print(" Humidity:");
     Serial.print(humd, 1);
     Serial.print(",\"flame\":");
-    //Serial.print(" Flame:");
     Serial.print(255 - flameLevel);
+    Serial.print(",\"state\":");
+    Serial.print(getState());
     Serial.print("}");
     Serial.println();
-  }  
+  }
+
+  // Read response data
+  int inDataState = 0;
+  float inDataLow = 0;
+  float inDataHigh = 0;
+  float inDataCurr = 0;
+  String inString = "";
+  int dataIdx = 0;
+  if (Serial.available() > 0) {
+  while (Serial.available() > 0) {
+    int inByte = Serial.read();
+    if (inByte == '\n') {
+      break;
+    }
+    if (inByte != ' ') { 
+        inString += (char)inByte;
+    } else {
+      if (dataIdx == 0) {
+        inDataState = inString.toInt();
+      } else if (dataIdx == 1) {
+        inDataLow = inString.toFloat();
+      } else if (dataIdx == 2) {
+        inDataHigh = inString.toFloat();
+      } else if (dataIdx == 0) {
+        inDataCurr = inString.toFloat();
+      }
+      inString = "";
+      dataIdx++;
+    }
+  }
+  // Toggle state according to received state
+  setState(inDataState);
+  }
 
 }
 
@@ -167,6 +199,62 @@ int calcFlameLevel(float currentTemp, float desiredTemp) {
   }
 
   return fl;
+}
+
+/* 
+ * Get state of heating 
+ * 0 - off
+ * 1 - night temp on
+ * 2 - day temp on
+ * 3 - timer temp
+ * 4 - burst mode
+ */
+int getState() {
+  if(ledNightState == HIGH) {
+    return 1;
+  } else if (ledDayState == HIGH) {
+    return 2;
+  } else if (ledTimerState == HIGH) {
+    return 3;
+  } else if (ledOnState == HIGH) {
+    return 4;
+  } else if (ledOffState == HIGH) {
+    return 0;
+  }
+}
+
+void setState(int state) {
+  if (state == 0) {
+    ledNightState = LOW;
+    ledDayState = LOW;
+    ledTimerState = LOW;
+    ledOnState = LOW;
+    ledOffState = HIGH;
+  } else if (state == 1) {
+    ledNightState = HIGH;
+    ledDayState = LOW;
+    ledTimerState = LOW;
+    ledOnState = LOW;
+    ledOffState = LOW;
+  } else if (state == 2) {
+    ledNightState = LOW;
+    ledDayState = HIGH;
+    ledTimerState = LOW;
+    ledOnState = LOW;
+    ledOffState = LOW;
+  } else if (state == 3) {
+    ledNightState = LOW;
+    ledDayState = LOW;
+    ledTimerState = HIGH;
+    ledOnState = LOW;
+    ledOffState = LOW;
+  } else if (state == 4) {
+    ledNightState = LOW;
+    ledDayState = LOW;
+    ledTimerState = LOW;
+    ledOnState = HIGH;
+    ledOffState = LOW;
+  }
 }
 
 void toggleLed() {
