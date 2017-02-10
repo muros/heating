@@ -59,3 +59,43 @@ Another source was:
 
 https://github.com/home-assistant/home-assistant.github.io/blob/next/source/_components/climate.eq3btsmart.markdown
 
+### Option on Kura Pi device ###
+
+Find out address of ThermCtrl
+```bash
+$sudo hcitool lescan
+
+LE Scan ...
+ED:44:66:95:FB:9E ThermCtrl
+00:1A:22:07:28:01 (unknown)
+ED:44:66:95:FB:9E (unknown)
+00:1A:22:07:28:01 CC-RT-BLE
+```
+
+Do not forget -t random option, RedBear nano does not connect without that option.
+
+```bash
+$sudo gatttool -t random -b ED:44:66:95:FB:9E -I
+
+[][ED:44:66:95:FB:9E][LE]>connect
+[CON][ED:44:66:95:FB:9E][LE]>characteristics
+handle: 0x0002, char properties: 0x0a, char value handle: 0x0003, uuid: 00002a00-0000-1000-8000-00805f9b34fb
+handle: 0x0004, char properties: 0x02, char value handle: 0x0005, uuid: 00002a01-0000-1000-8000-00805f9b34fb
+handle: 0x0006, char properties: 0x02, char value handle: 0x0007, uuid: 00002a04-0000-1000-8000-00805f9b34fb
+handle: 0x0009, char properties: 0x20, char value handle: 0x000a, uuid: 00002a05-0000-1000-8000-00805f9b34fb
+handle: 0x000d, char properties: 0x02, char value handle: 0x000e, uuid: 0000a001-0000-1000-8000-00805f9b34fb
+handle: 0x000f, char properties: 0x08, char value handle: 0x0010, uuid: 0000a002-0000-1000-8000-00805f9b34fb
+```
+
+Last is value of how mouch to open valve:
+```bash
+[CON][ED:44:66:95:FB:9E][LE]>char-write-req  0x0010 10
+```
+
+Read value writen
+```bash
+[CON][ED:44:66:95:FB:9E][LE]>char-read-hnd  0x000e
+```
+
+Don't know how to advertise value once writen.
+Do I need that?
